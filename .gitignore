@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# build
+dist/
+build/
+
+# env
+.env
+
+# python
+__pycache__/
+*.pyc
+*.pkl
+
+# logs
+logs
+*.log
+
+# editor
+.vscode/
+.idea/
+.DS_Store
