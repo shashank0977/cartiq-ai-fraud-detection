@@ -89,5 +89,19 @@ python ml_api.py
 - Cloud deployment
 - Better fraud model with real datasets
 
+## Screenshots
+
+### Dashboard
+![Dashboard](screenshots/homepage.png)
+
+### Fraud Detection Alert
+![Fraud Alert](screenshots/fraud-alert.png)
+
+### Risk Gauge
+![Risk Gauge](screenshots/risk-gauge.png)
+
+### Detection Panel
+![Detection Panel](screenshots/detection-panel.png)
+
 ## Author
 Shashank
