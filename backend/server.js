@@ -73,7 +73,9 @@ io.on("connection", (socket) => {
     };
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/predict", payload);
+      const ML_API_URL = process.env.ML_API_URL || "http://127.0.0.1:8000";
+
+const response = await axios.post(`${ML_API_URL}/predict`, payload);
 
       let result = response.data;
 
@@ -137,4 +139,8 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(5000, () => console.log("ML Socket Server running on 5000"));
+const PORT = process.env.PORT || 5000;
+
+server.listen(PORT, () =>
+  console.log(`ML Socket Server running on ${PORT}`)
+);
