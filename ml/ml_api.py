@@ -7,9 +7,12 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Load ML models
-model = joblib.load("fraud_transfer_model.pkl")
-scaler = joblib.load("scaler.pkl")
+# FIX: Absolute path - Render lo work avvadaniki
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Load ML models with correct path
+model = joblib.load(os.path.join(BASE_DIR, "fraud_transfer_model.pkl"))
+scaler = joblib.load(os.path.join(BASE_DIR, "scaler.pkl"))
 
 @app.route("/", methods=["GET"])
 def health():
