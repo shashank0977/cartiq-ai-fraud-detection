@@ -18,11 +18,7 @@ function App() {
     let risk = 0;
     let logs = [];
     const count = selectedSession.coupons.length;
-
-    // Count duplicates properly
     const save10Count = selectedSession.coupons.filter(c => c === "SAVE10").length;
-    const vipCount = selectedSession.coupons.filter(c => c === "VIP50").length;
-    const summerCount = selectedSession.coupons.filter(c => c === "SUMMER20").length;
 
     if (count >= 1) {
       risk += 35;
@@ -53,11 +49,18 @@ function App() {
 
     const updated = { ...selectedSession, risk, status, logs };
     
-    // Only update if changed to avoid loop
-    if (selectedSession.risk !== risk || selectedSession.status !== status) {
+    if (selectedSession.risk !== risk || selectedSession.status !== status || selectedSession.logs.length !== logs.length) {
       setSessions(prev => prev.map(s => s.id === selectedSession.id ? updated : s));
     }
   }, [selectedSession?.coupons, selectedSession?.removedAfterCoupon, selectedId]);
+
+  let discountPercent = 0;
+  selectedSession?.coupons.forEach(code => {
+    if (code === "SAVE10") discountPercent += 10;
+    if (code === "VIP50") discountPercent += 50;
+    if (code === "SUMMER20") discountPercent += 20;
+  });
+  if (discountPercent > 80) discountPercent = 80;
 
   return (
     <div className="flex h-screen">
@@ -84,8 +87,50 @@ function App() {
           ))}
         </div>
 
-        <div className="mt-4 text-sm">
+        {/* MISSING INFO - IKKADA ADD CHESANU */}
+        <div className="bg-slate-800 p-4 rounded-xl mt-4 border border-cyan-500/30">
+          <h3 className="font-bold text-cyan-400 mb-2">🤖 CartIQ AI Decision Engine</h3>
+          {selectedSession?.risk < 30 && (
+            <div className="text-green-300">
+              <p className="font-bold">✅ Transaction Allowed</p>
+              <p className="text-sm mt-1 text-slate-300">No fraud detected. Normal shopping. Proceed to checkout.</p>
+            </div>
+          )}
+          {selectedSession?.risk >= 30 && selectedSession?.risk < 60 && (
+            <div className="text-yellow-300">
+              <p className="font-bold">⚠️ Under Monitoring</p>
+              <p className="text-sm mt-1 text-slate-300">Coupon stacking detected. System tracking. User flagged for review. AI learning pattern.</p>
+            </div>
+          )}
+          {selectedSession?.risk >= 60 && selectedSession?.risk < 85 && (
+            <div className="text-orange-300">
+              <p className="font-bold">🚩 FLAGGED - Action Required</p>
+              <p className="text-sm mt-1 text-slate-300">High risk! App will: 1. Block coupons 2. Require CAPTCHA 3. Notify admin. Promo abuse!</p>
+            </div>
+          )}
+          {selectedSession?.risk >= 85 && (
+            <div className="text-red-400">
+              <p className="font-bold">🔴 BLOCKED - Fraud Confirmed</p>
+              <p className="text-sm mt-1 text-slate-300">App Action: 1. Session AUTO-BLOCKED 2. Checkout Disabled 3. Order Cancelled 4. IP Flagged. Saved ${discountPercent}% loss!</p>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-slate-800 p-4 rounded-xl mt-4">
+          <h3 className="font-bold mb-2">📊 What CartIQ Does?</h3>
+          <p className="text-sm text-slate-300 leading-relaxed">
+            CartIQ is Real-Time Fraud Detection. It detects:<br/>
+            • Multiple coupon stacking<br/>
+            • Same coupon reuse (SAVE10 x 3)<br/>
+            • Cart removal after coupon<br/>
+            • 80%+ discount farming<br/><br/>
+            Based on Risk, it auto-blocks and saves business money.
+          </p>
+        </div>
+
+        <div className="mt-4 text-sm bg-slate-800 p-3 rounded">
           <p>Coupons: {selectedSession?.coupons.join(", ") || "None"} (Count: {selectedSession?.coupons.length})</p>
+          <p>Discount: {discountPercent}% | Cart: {selectedSession?.cart.length} items</p>
         </div>
       </div>
     </div>
