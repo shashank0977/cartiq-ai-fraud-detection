@@ -1,81 +1,95 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CartPanel from "./components/CartPanel";
-import DetectionPanel from "./components/DetectionPanel";
 
-const ML_API = "https://cartiq-ml-api.onrender.com";
+function App() {
+  const [sessions, setSessions] = useState([
+    { id: "sess_001", cart: [], coupons: [], status: "ACTIVE", removedAfterCoupon: false, risk: 0, logs: [] }
+  ]);
+  const [selectedId, setSelectedId] = useState("sess_001");
+  const selectedSession = sessions.find(s => s.id === selectedId);
 
-export default function App() {
-  const [session, setSession] = useState({
-    id: "normal_user_001",
-    status: "active",
-    cart: [],
-    coupons: [],
-    removedAfterCoupon: false
-  });
-
-  const [analysis, setAnalysis] = useState({
-    events: [],
-    risk: 0,
-    blocked: false
-  });
-
-  const updateSession = async (newSession) => {
-    setSession(newSession);
-
-    // LOCAL FALLBACK LOGIC - Demo never fails
-    let risk = 0;
-    let events = [];
-
-    if (newSession.coupons?.length > 1) {
-      risk += 35;
-      events.push({ type: "Coupon Stacking Abuse", severity: "HIGH", confidence: 75, time: new Date().toLocaleTimeString() });
-    }
-    if (newSession.removedAfterCoupon) {
-      risk += 30;
-      events.push({ type: "Cart Remove Exploit", severity: "CRITICAL", confidence: 85, time: new Date().toLocaleTimeString() });
-    }
-    if (newSession.coupons?.length >= 1 && newSession.cart?.length === 0) {
-      risk += 20;
-      events.push({ type: "Ghost Promo Abuse", severity: "MEDIUM", confidence: 60, time: new Date().toLocaleTimeString() });
-    }
-    if (newSession.coupons?.length > 0) {
-      risk += 10;
-    }
-
-    // Try ML API also
-    try {
-      const res = await fetch(`${ML_API}/predict`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          coupons_used: newSession.coupons?.length || 0,
-          cart_items: newSession.cart?.length || 0,
-          removed_after_coupon: newSession.removedAfterCoupon ? 1 : 0,
-        })
-      });
-      const mlData = await res.json();
-      if (mlData.risk) risk = mlData.risk;
-      if (mlData.events?.length) events = mlData.events;
-      console.log("ML API:", mlData);
-    } catch (e) {
-      console.log("Using local logic, ML API sleeping");
-    }
-
-    setAnalysis({
-      events,
-      risk: Math.min(risk, 95),
-      blocked: risk >= 75
-    });
+  const updateSession = (newSession) => {
+    setSessions(prev => prev.map(s => s.id === newSession.id ? newSession : s));
   };
 
+  useEffect(() => {
+    if (!selectedSession) return;
+    
+    let risk = 0;
+    let logs = [];
+    const count = selectedSession.coupons.length;
+
+    // Count duplicates properly
+    const save10Count = selectedSession.coupons.filter(c => c === "SAVE10").length;
+    const vipCount = selectedSession.coupons.filter(c => c === "VIP50").length;
+    const summerCount = selectedSession.coupons.filter(c => c === "SUMMER20").length;
+
+    if (count >= 1) {
+      risk += 35;
+      logs.push({ msg: `Coupon stacking detected: ${count} coupons`, level: "MEDIUM" });
+    }
+    if (count >= 2) {
+      risk += 35;
+      logs.push({ msg: `Multiple coupons abused: ${selectedSession.coupons.join(", ")}`, level: "HIGH" });
+    }
+    if (count >= 3) {
+      risk += 40;
+      logs.push({ msg: `CRITICAL: ${count}x coupon abuse - Discount farming!`, level: "CRITICAL" });
+    }
+    if (save10Count > 1) {
+      risk += 20;
+      logs.push({ msg: `Same coupon SAVE10 used ${save10Count} times`, level: "HIGH" });
+    }
+    if (selectedSession.removedAfterCoupon) {
+      risk += 25;
+      logs.push({ msg: "Cart manipulation after coupon", level: "MEDIUM" });
+    }
+
+    if (risk > 100) risk = 100;
+    
+    let status = "ACTIVE";
+    if (risk >= 75) status = "BLOCKED";
+    else if (risk >= 50) status = "FLAGGED";
+
+    const updated = { ...selectedSession, risk, status, logs };
+    
+    // Only update if changed to avoid loop
+    if (selectedSession.risk !== risk || selectedSession.status !== status) {
+      setSessions(prev => prev.map(s => s.id === selectedSession.id ? updated : s));
+    }
+  }, [selectedSession?.coupons, selectedSession?.removedAfterCoupon, selectedId]);
+
   return (
-    <div className="flex h-screen bg-slate-950 text-white">
-      <div className="w-1/2 border-r border-slate-700">
-        <CartPanel session={session} updateSession={updateSession} />
+    <div className="flex h-screen">
+      <div className="w-1/2 overflow-hidden">
+        {selectedSession && <CartPanel session={selectedSession} updateSession={updateSession} />}
       </div>
-      <div className="w-1/2">
-        <DetectionPanel analysis={analysis} />
+      <div className="w-1/2 bg-slate-900 text-white p-6 overflow-y-auto">
+        <h2 className="text-3xl font-bold mb-4">🛡️ CartIQ Security Dashboard</h2>
+        
+        <div className="bg-slate-800 p-4 rounded-xl mb-4">
+          <p>Risk Score</p>
+          <div className="w-full bg-gray-700 h-6 rounded">
+            <div className={`h-6 rounded ${selectedSession?.risk >= 75 ? 'bg-red-500' : selectedSession?.risk >= 50 ? 'bg-yellow-400' : 'bg-green-500'}`} style={{width: `${selectedSession?.risk || 0}%`}}></div>
+          </div>
+          <p className="text-4xl font-bold mt-2">{selectedSession?.risk || 0}% - {selectedSession?.status}</p>
+        </div>
+
+        <div className="bg-slate-800 p-4 rounded-xl">
+          <h3 className="font-bold mb-2">Live Threat Activity</h3>
+          {selectedSession?.logs?.length === 0 ? <p>No threats</p> : selectedSession?.logs?.map((log, i) => (
+            <div key={i} className={`p-2 mb-2 rounded ${log.level === 'CRITICAL' ? 'bg-red-900' : log.level === 'HIGH' ? 'bg-orange-900' : 'bg-yellow-900'}`}>
+              [{log.level}] {log.msg}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 text-sm">
+          <p>Coupons: {selectedSession?.coupons.join(", ") || "None"} (Count: {selectedSession?.coupons.length})</p>
+        </div>
       </div>
     </div>
   );
 }
+
+export default App;
