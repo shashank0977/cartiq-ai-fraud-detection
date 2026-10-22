@@ -1,21 +1,45 @@
-# CartIQ AI - Hybrid E-commerce Fraud Detection
+# 🛡️ CartIQ - AI Powered E-commerce Fraud Detection
 
-Full-stack fraud detection for coupon abuse & cart manipulation.
+### Real-Time Coupon Abuse & Fraud Prevention System
 
-**How it works (100% Real):**
-1. React frontend sends cart behavior (7 features)
-2. Node backend forwards to Flask ML API
-3. ML API: Random Forest (fraud_transfer_model.pkl) gives fraud probability (60% weight)
-4. Rule Engine adds business logic (40% weight) - coupon stacking, cart manipulation
-5. Returns hybrid risk score 0-100 + fraud events
+**Live Demo:** [Your Vercel Link Here]
 
-**Tech Stack:**
-Frontend: React, Vite, Tailwind, Socket.IO Client
-Backend: Node.js, Express, Socket.IO
-ML API: Python, Flask, Scikit-learn (Random Forest), Pandas
+## 📊 What CartIQ Does?
 
-**Model Features:** coupons_used, repeated_coupon, cart_items, removed_after_coupon, coupon_speed, account_deleted, total_discount
-Run Local:
-- frontend: npm install && npm run dev
-- backend: npm install && npm start
-- ml: pip install -r requirements.txt && python ml_api.py
+✅ **Real-Time Fraud Detection Engine**
+- Multiple coupon stacking (SAVE10 + VIP50)
+- Same coupon reuse (SAVE10 x 3)
+- Cart manipulation after coupon apply
+- 80%+ discount farming attempt
+
+→ Based on Risk Score, it auto-blocks session and prevents revenue loss.
+
+## 🚀 Features
+
+- **Smart Coupon Intelligence** - Detects stacking & reuse
+- **Live Risk Scoring** - 0% to 100% real-time
+- **AI Decision Engine:**
+    - 0-30%: ✅ Transaction Allowed
+    - 30-60%: ⚠️ Under Monitoring
+    - 60-85%: 🚩 FLAGGED
+    - 85-100%: 🔴 BLOCKED - Fraud Confirmed
+
+## 🛒 Demo Flow
+
+1. Add product to cart
+2. Apply SAVE10 → Risk 35%
+3. Apply VIP50 → Risk 70% FLAGGED
+4. Apply SAVE10 again → Risk 100% BLOCKED
+
+## 💻 Tech Stack
+
+- React + Framer Motion
+- Tailwind CSS
+- Real-time Session Tracking
+
+## 🎯 Business Value
+
+Prevents discount abuse, saves revenue, auto-blocks fraudulent transactions.
+
+---
+Built for E-commerce Security Demo
