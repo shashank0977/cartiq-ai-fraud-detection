@@ -182,17 +182,19 @@ export default function CartPanel({ session, updateSession }) {
   };
 
   const applyCoupon = (code) => {
-    if (!session.coupons.includes(code)) {
-      updateSession({ ...session, coupons: [...session.coupons, code] });
-    }
-  };
+  // Allow stacking same coupon multiple times to show fraud
+  updateSession({ ...session, coupons: [...session.coupons, code] });
+};
 
   const rawSubtotal = session.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   let discountPercent = 0;
-  if (session.coupons.includes("SAVE10")) discountPercent += 10;
-  if (session.coupons.includes("VIP50")) discountPercent += 50;
-  if (session.coupons.includes("SUMMER20")) discountPercent += 20;
+session.coupons.forEach(code => {
+  if (code === "SAVE10") discountPercent += 10;
+  if (code === "VIP50") discountPercent += 50;
+  if (code === "SUMMER20") discountPercent += 20;
+});
+if (discountPercent > 80) discountPercent = 80; // max cap
 
   const discountAmount = (rawSubtotal * discountPercent) / 100;
   const subtotal = Math.max(rawSubtotal - discountAmount, 0);
