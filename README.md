@@ -2,7 +2,7 @@
 
 ### Real-Time Coupon Abuse & Fraud Prevention System
 
-**Live Demo:** [Your Vercel Link Here]
+**Live Demo:** [https://cartiq-ai-fraud-detection.vercel.app/]
 
 ## 📊 What CartIQ Does?
 
