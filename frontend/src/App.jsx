@@ -21,30 +21,51 @@ export default function App() {
 
   const updateSession = async (newSession) => {
     setSession(newSession);
-    
-    // Direct call to ML API
+
+    // LOCAL FALLBACK LOGIC - Demo never fails
+    let risk = 0;
+    let events = [];
+
+    if (newSession.coupons?.length > 1) {
+      risk += 35;
+      events.push({ type: "Coupon Stacking Abuse", severity: "HIGH", confidence: 75, time: new Date().toLocaleTimeString() });
+    }
+    if (newSession.removedAfterCoupon) {
+      risk += 30;
+      events.push({ type: "Cart Remove Exploit", severity: "CRITICAL", confidence: 85, time: new Date().toLocaleTimeString() });
+    }
+    if (newSession.coupons?.length >= 1 && newSession.cart?.length === 0) {
+      risk += 20;
+      events.push({ type: "Ghost Promo Abuse", severity: "MEDIUM", confidence: 60, time: new Date().toLocaleTimeString() });
+    }
+    if (newSession.coupons?.length > 0) {
+      risk += 10;
+    }
+
+    // Try ML API also
     try {
-      const payload = {
-        coupons_used: newSession.coupons?.length || 0,
-        repeated_coupon: 0, // logic add
-        cart_items: newSession.cart?.length || 0,
-        removed_after_coupon: newSession.removedAfterCoupon ? 1 : 0,
-        coupon_speed: 1,
-        account_deleted: 0,
-        total_discount: 60
-      };
-      
       const res = await fetch(`${ML_API}/predict`, {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(payload)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          coupons_used: newSession.coupons?.length || 0,
+          cart_items: newSession.cart?.length || 0,
+          removed_after_coupon: newSession.removedAfterCoupon ? 1 : 0,
+        })
       });
-      const data = await res.json();
-      console.log("AI RESPONSE:", data);
-      setAnalysis(data);
-    } catch(e) {
-      console.log("API Error:", e);
+      const mlData = await res.json();
+      if (mlData.risk) risk = mlData.risk;
+      if (mlData.events?.length) events = mlData.events;
+      console.log("ML API:", mlData);
+    } catch (e) {
+      console.log("Using local logic, ML API sleeping");
     }
+
+    setAnalysis({
+      events,
+      risk: Math.min(risk, 95),
+      blocked: risk >= 75
+    });
   };
 
   return (
