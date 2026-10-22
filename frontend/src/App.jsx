@@ -1,14 +1,8 @@
-import { useState, useEffect } from "react";
-import io from "socket.io-client";
+import { useState } from "react";
 import CartPanel from "./components/CartPanel";
 import DetectionPanel from "./components/DetectionPanel";
 
-// FIX: Use deployed backend URL
-const BACKEND_URL = "https://cartiq-ml-api.onrender.com";
-// Okavela nee main backend vere URL lo unte daani URL pettu
-// Ex: https://cartiq-backend.onrender.com
-
-const socket = io(BACKEND_URL);
+const ML_API = "https://cartiq-ml-api.onrender.com";
 
 export default function App() {
   const [session, setSession] = useState({
@@ -25,20 +19,32 @@ export default function App() {
     blocked: false
   });
 
-  useEffect(() => {
-    socket.on("analysis", (data) => {
+  const updateSession = async (newSession) => {
+    setSession(newSession);
+    
+    // Direct call to ML API
+    try {
+      const payload = {
+        coupons_used: newSession.coupons?.length || 0,
+        repeated_coupon: 0, // logic add
+        cart_items: newSession.cart?.length || 0,
+        removed_after_coupon: newSession.removedAfterCoupon ? 1 : 0,
+        coupon_speed: 1,
+        account_deleted: 0,
+        total_discount: 60
+      };
+      
+      const res = await fetch(`${ML_API}/predict`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
       console.log("AI RESPONSE:", data);
       setAnalysis(data);
-    });
-    socket.on("connect_error", (err) => {
-      console.log("Socket error:", err.message);
-    });
-    return () => socket.off("analysis");
-  }, []);
-
-  const updateSession = (newSession) => {
-    setSession(newSession);
-    socket.emit("cartUpdate", newSession);
+    } catch(e) {
+      console.log("API Error:", e);
+    }
   };
 
   return (
