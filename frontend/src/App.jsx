@@ -87,7 +87,6 @@ function App() {
           ))}
         </div>
 
-        {/* MISSING INFO - IKKADA ADD CHESANU */}
         <div className="bg-slate-800 p-4 rounded-xl mt-4 border border-cyan-500/30">
           <h3 className="font-bold text-cyan-400 mb-2">🤖 CartIQ AI Decision Engine</h3>
           {selectedSession?.risk < 30 && (
@@ -111,21 +110,22 @@ function App() {
           {selectedSession?.risk >= 85 && (
             <div className="text-red-400">
               <p className="font-bold">🔴 BLOCKED - Fraud Confirmed</p>
-              <p className="text-sm mt-1 text-slate-300">App Action: 1. Session AUTO-BLOCKED 2. Checkout Disabled 3. Order Cancelled 4. IP Flagged. Saved ${discountPercent}% loss!</p>
+              <p className="text-sm mt-1 text-slate-300">App Action: 1. Session AUTO-BLOCKED 2. Checkout Disabled 3. Order Cancelled 4. IP Flagged. Saved {discountPercent}% loss - Business Protected!</p>
             </div>
           )}
         </div>
 
-        <div className="bg-slate-800 p-4 rounded-xl mt-4">
-          <h3 className="font-bold mb-2">📊 What CartIQ Does?</h3>
-          <p className="text-sm text-slate-300 leading-relaxed">
-            CartIQ is Real-Time Fraud Detection. It detects:<br/>
-            • Multiple coupon stacking<br/>
-            • Same coupon reuse (SAVE10 x 3)<br/>
-            • Cart removal after coupon<br/>
-            • 80%+ discount farming<br/><br/>
-            Based on Risk, it auto-blocks and saves business money.
-          </p>
+        {/* OPTION 2 - IMPROVED VERSION */}
+        <div className="bg-slate-800 p-4 rounded-xl mt-4 border border-slate-700">
+          <h3 className="font-bold mb-3 flex items-center gap-2">📊 What CartIQ Does?</h3>
+          <div className="text-sm text-slate-300 space-y-2">
+            <p>✅ <b>Real-Time Fraud Detection Engine</b></p>
+            <p>• Multiple coupon stacking (SAVE10 + VIP50)</p>
+            <p>• Same coupon reuse (SAVE10 x 3)</p>
+            <p>• Cart manipulation after coupon apply</p>
+            <p>• 80%+ discount farming attempt</p>
+            <p className="pt-2 text-cyan-400 font-semibold">→ Based on Risk Score, it auto-blocks session and prevents revenue loss.</p>
+          </div>
         </div>
 
         <div className="mt-4 text-sm bg-slate-800 p-3 rounded">
