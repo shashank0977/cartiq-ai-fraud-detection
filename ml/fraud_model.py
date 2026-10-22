@@ -2,9 +2,13 @@ import sys
 import json
 import joblib
 import numpy as np
+import os
 
-model = joblib.load("fraud_transfer_model.pkl")
-scaler = joblib.load("scaler.pkl")
+# FIX: Absolute path
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+model = joblib.load(os.path.join(BASE_DIR, "fraud_transfer_model.pkl"))
+scaler = joblib.load(os.path.join(BASE_DIR, "scaler.pkl"))
 
 data = json.loads(sys.argv[1])
 
