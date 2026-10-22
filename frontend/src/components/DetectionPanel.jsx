@@ -23,7 +23,7 @@ export default function DetectionPanel({ analysis }) {
       {/* LIVE RISK */}
       <div className="bg-slate-900/70 border border-slate-700 rounded-2xl p-5 mb-8 shadow-xl">
         <h2 className="text-2xl font-semibold mb-4">Live Session Risk</h2>
-        <RiskGauge risk={analysis.risk} />
+        <RiskGauge risk={analysis.risk ?? analysis.events?.[0]?.confidence ?? 0} />
       </div>
 
       {/* QUICK STATUS */}
